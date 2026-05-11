@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/auth-service
+  IMAGE_NAME: ${{ github.repository_owner }}/tourist-auth-service
 
 jobs:
   build-push:
