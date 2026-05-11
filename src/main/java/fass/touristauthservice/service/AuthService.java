@@ -16,6 +16,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
@@ -28,7 +29,8 @@ public class AuthService {
     private final ActivationTokenRepository tokenRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     public void register(RegisterRequest req) {
         if (touristRepo.existsByEmail(req.email())) {
@@ -48,12 +50,13 @@ public class AuthService {
         token.setUsed(false);
         tokenRepo.save(token);
 
-        kafkaTemplate.send("tourist.registered", new TouristRegisteredEvent(
+        kafkaTemplate.send("tourist.registered",
+                objectMapper.writeValueAsString(new TouristRegisteredEvent(
                 tourist.getId(),
                 tourist.getEmail(),
                 tourist.getName(),
                 token.getToken()
-        ));
+        )));
     }
 
     public void activate(String tokenValue) {
@@ -86,12 +89,13 @@ public class AuthService {
         newToken.setUsed(false);
         tokenRepo.save(newToken);
 
-        kafkaTemplate.send("tourist.registered", new TouristRegisteredEvent(
+        kafkaTemplate.send("tourist.registered",
+                objectMapper.writeValueAsString(new TouristRegisteredEvent(
                 tourist.getId(),
                 tourist.getEmail(),
                 tourist.getName(),
                 newToken.getToken()
-        ));
+        )));
     }
 
     @Transactional(readOnly = true)
